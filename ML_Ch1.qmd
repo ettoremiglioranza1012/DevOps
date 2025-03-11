@@ -1,5 +1,5 @@
 ---
-title: "Penguin Weight Prediction"
+title: "Penguin Species Prediction"
 format: html
 jupyter: python3
 ---
