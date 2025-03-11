@@ -3,3 +3,7 @@ title: "Untitled"
 format: html
 ---
 
+```{python}
+# Il tuo codice Python qui
+print("Hello, Quarto!")
+```
