@@ -1,9 +1,92 @@
 ---
-title: "Untitled"
+title: "Penguin Weight Prediction"
 format: html
+jupyter: python3
 ---
 
 ```{python}
-# Il tuo codice Python qui
-print("Hello, Quarto!")
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.pipeline import Pipeline
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import cross_val_score
+
+# Load dataset
+penguins = sns.load_dataset("penguins").dropna()
+
+# Select features (bill length & flipper length) and target (species)
+X = penguins[["bill_length_mm", "flipper_length_mm"]]
+y = penguins["species"]
+
+# Encode target labels (species)
+label_encoder = LabelEncoder()
+y = label_encoder.fit_transform(y)  # Converts species to numeric values
+
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=23)
+
+# Define the pipeline
+knn_pipeline = Pipeline([
+    ("scaler", StandardScaler()),  # Step 1: Standardize features
+    ("knn", KNeighborsClassifier(n_neighbors=10))  # Step 2: KNN classification
+])
+
+# Train the pipeline
+knn_pipeline.fit(X_train, y_train)
+
+# Make predictions
+y_pred = knn_pipeline.predict(X_test)
+
+# Evaluate the model
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print(classification_report(y_test, y_pred, target_names=label_encoder.classes_))
+```
+
+```{python}
+# CROSS VALIDATION ANALYSIS - k's tuning
+
+# Define range of k values to test
+k_values = range(1, 21)  # Testing k from 1 to 20
+cv_scores = []
+
+# Perform cross-validation for each k
+for k in k_values:
+    knn = KNeighborsClassifier(n_neighbors=k)
+    scores = cross_val_score(knn, X_train, y_train, cv=5, scoring='accuracy')  # 5-fold CV
+    cv_scores.append(np.mean(scores))  # Store mean accuracy
+
+# Find the best k
+best_k = k_values[np.argmax(cv_scores)]
+best_accuracy = max(cv_scores)
+
+print(f"Best k: {best_k}")
+print(f"Best cross-validated accuracy: {best_accuracy:.4f}")
+
+# Optional: Plot the results
+
+plt.plot(k_values, cv_scores, marker='o', linestyle='dashed')
+plt.xlabel('Number of Neighbors (k)')
+plt.ylabel('Cross-Validated Accuracy')
+plt.title('KNN Hyperparameter Tuning')
+plt.show()
+```
+
+```{python}
+# Use tuned hyperparameter k in full data 
+
+# Train KNN with the best k
+best_knn = KNeighborsClassifier(n_neighbors=best_k)
+best_knn.fit(X_train, y_train)  # Fit on training data
+
+# Make predictions on test data
+y_pred = best_knn.predict(X_test)
+
+# Evaluate the model
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print(classification_report(y_test, y_pred, target_names=label_encoder.classes_))
 ```
