@@ -1,0 +1,78 @@
+---
+title: "EDA_Ch1.qmd"
+format: html
+---
+
+```{r}
+# write here
+```
+
+```{r}
+renv::init()
+#renv::status()
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(palmerpenguins)
+library(ggplot2)
+```
+
+```{r}
+data <- palmerpenguins::penguins
+```
+
+```{r}
+# View the first few rows of the dataset
+head(data)
+```
+
+```{r}
+# Check the structure of the dataset
+str(data)
+```
+
+```{r}
+# Check for missing values
+sum(is.na(data))
+
+# Remove rows with missing values (if any)
+clean_data <- data %>% drop_na()
+```
+
+```{r}
+# Summary statistics for numeric variables
+summary(clean_data)
+```
+
+```{r}
+# Histogram of penguin bill length
+ggplot(clean_data, aes(x = bill_length_mm)) +
+  geom_histogram(binwidth = 1, fill = "skyblue", color = "black") +
+  labs(title = "Histogram of Bill Length", x = "Bill Length (mm)", y = "Count")
+```
+
+```{r}
+# Scatter plot of bill length vs. flipper length
+ggplot(clean_data, aes(x = bill_length_mm, y = flipper_length_mm, color = species)) +
+  geom_point() +
+  labs(title = "Bill Length vs Flipper Length", x = "Bill Length (mm)", y = "Flipper Length (mm)")
+```
+
+```{r}
+# Correlation between bill length and flipper length
+cor(clean_data$bill_length_mm, clean_data$flipper_length_mm, use = "complete.obs")
+```
+
+```{r}
+# Average bill length by species
+clean_data %>%
+  group_by(species) %>%
+  summarise(mean_bill_length = mean(bill_length_mm, na.rm = TRUE))
+```
+
+```{r}
+# Save the cleaned data to a CSV file
+write.csv(clean_data, "clean_penguins_data.csv", row.names = FALSE)
+```
